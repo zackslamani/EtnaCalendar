@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "278376380859",
+    "project_id": "calendaretna-a323d",
+    "storage_bucket": "calendaretna-a323d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:278376380859:android:aabb127f9d83c81fef2c9e",
+        "android_client_info": {
+          "package_name": "com.example.calendaretna"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "278376380859-ibmtnl28qi66lfud6v8vicj9juo5v7qm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-E7-vpQFr3zMqqzjxDARL-ubtEI2k8A8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "278376380859-ibmtnl28qi66lfud6v8vicj9juo5v7qm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
