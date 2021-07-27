@@ -1,15 +1,24 @@
 package com.example.calendaretna;
 
 public class Event {
-    String eventName, time, date, month, year, IDEventCreator;
+    String id, eventName, time, date, month, year, mailEventCreator;
 
-    public Event(String eventName, String time, String date, String month, String year, String IDEventCreator){
+    public Event(String id, String eventName, String time, String date, String month, String year, String mailEventCreator){
+        this.id = id;
         this.eventName = eventName;
         this.time = time;
         this.date = date;
         this.month = month;
         this.year = year;
-        this.IDEventCreator = IDEventCreator;
+        this.mailEventCreator = mailEventCreator;
+    }
+
+    public String getIDEvent(){
+        return id;
+    }
+
+    public void setIdName(String id){
+        this.id = id;
     }
 
     public String getEventName(){
@@ -52,12 +61,12 @@ public class Event {
         this.year = year;
     }
 
-    public String getIDEventCreator(){
-        return IDEventCreator;
+    public String getMailEventCreator(){
+        return mailEventCreator;
     }
 
-    public void setIDEventCreator(String IDEventCreator){
-        this.IDEventCreator = IDEventCreator;
+    public void setIDEventCreator(String mailEventCreator){
+        this.mailEventCreator = mailEventCreator;
     }
 
 }

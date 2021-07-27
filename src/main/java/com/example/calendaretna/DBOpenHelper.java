@@ -12,11 +12,11 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 
 
 
-    private static final String CREATE_EVENTS_TABLE = "CREATE TABLE "+DBStructure.EVENT_TABLE_NAME+"(IDEVENT INTEGER PRIMARY KEY AUTOINCREMENT, "+DBStructure.EVENTNAME+" TEXT, "+DBStructure.TIME+" TEXT, "+DBStructure.DATE+" TEXT, "+DBStructure.MONTH+" TEXT, "+DBStructure.YEAR+" TEXT, "+DBStructure.Notify+" TEXT, "+DBStructure.ID_EVENT_CREATOR+" TEXT)";
+    private static final String CREATE_EVENTS_TABLE = "CREATE TABLE "+DBStructure.EVENT_TABLE_NAME+"(IDEVENT INTEGER PRIMARY KEY AUTOINCREMENT, "+DBStructure.EVENTNAME+" TEXT, "+DBStructure.TIME+" TEXT, "+DBStructure.DATE+" TEXT, "+DBStructure.MONTH+" TEXT, "+DBStructure.YEAR+" TEXT, "+DBStructure.Notify+" TEXT, "+DBStructure.MAIL_EVENT_CREATOR+" TEXT)";
 
     private static final String DROP_EVENTS_TABLE= "DROP TABLE IF EXISTS "+DBStructure.EVENT_TABLE_NAME;
 
-    private static final String CREATE_GUESTS_TABLE = "CREATE TABLE "+DBStructure.GUESTS_TABLE_NAME+"("+DBStructure.IDEVENT+" TEXT, "+DBStructure.IDGUEST+" TEXT, "+DBStructure.DATE+" TEXT)";
+    private static final String CREATE_GUESTS_TABLE = "CREATE TABLE "+DBStructure.GUESTS_TABLE_NAME+"("+DBStructure.IDEVENT+" TEXT, "+DBStructure.MAILGUEST+" TEXT, "+DBStructure.DATE+" TEXT)";
 
     private static final String DROP_GUESTS_TABLE= "DROP TABLE IF EXISTS "+DBStructure.GUESTS_TABLE_NAME;
 
@@ -42,7 +42,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         onCreate(sqLiteDatabase);
     }
 
-    public void SaveEvent(String eventName, String time, String date, String month, String year, String notify, String idEventCreator,SQLiteDatabase database){
+    public void SaveEvent(String eventName, String time, String date, String month, String year, String notify, String mailEventCreator,SQLiteDatabase database){
         ContentValues contentValues = new ContentValues();
         contentValues.put(DBStructure.EVENTNAME, eventName);
         contentValues.put(DBStructure.TIME, time);
@@ -50,14 +50,14 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         contentValues.put(DBStructure.MONTH, month);
         contentValues.put(DBStructure.YEAR, year);
         contentValues.put(DBStructure.Notify, notify);
-        contentValues.put(DBStructure.ID_EVENT_CREATOR, idEventCreator);
+        contentValues.put(DBStructure.MAIL_EVENT_CREATOR, mailEventCreator);
         database.insert(DBStructure.EVENT_TABLE_NAME, null, contentValues);
     }
 
-    public Cursor ReadEvents(String date, String IDEventCreator, SQLiteDatabase database){
-        String [] Projections = {DBStructure.EVENTNAME, DBStructure.TIME, DBStructure.DATE, DBStructure.MONTH, DBStructure.YEAR, DBStructure.ID_EVENT_CREATOR};
-        String Selection = DBStructure.DATE + "=? and "+DBStructure.ID_EVENT_CREATOR+"=?";
-        String[] SelectionArgs = {date, IDEventCreator};
+    public Cursor ReadEvents(String date, String mailEventCreator, SQLiteDatabase database){
+        String [] Projections = {DBStructure.IDEVENT, DBStructure.EVENTNAME, DBStructure.TIME, DBStructure.DATE, DBStructure.MONTH, DBStructure.YEAR, DBStructure.MAIL_EVENT_CREATOR};
+        String Selection = DBStructure.DATE + "=? and "+DBStructure.MAIL_EVENT_CREATOR+"=?";
+        String[] SelectionArgs = {date, mailEventCreator};
 
         return database.query(DBStructure.EVENT_TABLE_NAME, Projections, Selection, SelectionArgs, null, null, null );
     }
@@ -73,26 +73,26 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 
 
 
-    public Cursor ReadEventsperMonth(String month, String year, String IDEventCreator, SQLiteDatabase database){
-        String [] Projections = {DBStructure.EVENTNAME, DBStructure.TIME, DBStructure.DATE, DBStructure.MONTH, DBStructure.YEAR, DBStructure.ID_EVENT_CREATOR};
-        String Selection = DBStructure.MONTH + "=? and "+DBStructure.YEAR+"=? and "+DBStructure.ID_EVENT_CREATOR+"=?";
-        String[] SelectionArgs = {month, year, IDEventCreator};
+    public Cursor ReadEventsperMonth(String month, String year, String mailEventCreator, SQLiteDatabase database){
+        String [] Projections = {DBStructure.IDEVENT, DBStructure.EVENTNAME, DBStructure.TIME, DBStructure.DATE, DBStructure.MONTH, DBStructure.YEAR, DBStructure.MAIL_EVENT_CREATOR};
+        String Selection = DBStructure.MONTH + "=? and "+DBStructure.YEAR+"=? and "+DBStructure.MAIL_EVENT_CREATOR+"=?";
+        String[] SelectionArgs = {month, year, mailEventCreator};
 
         return database.query(DBStructure.EVENT_TABLE_NAME, Projections, Selection, SelectionArgs, null, null, null );
     }
 
     public Cursor ReadEventsperMonthID(String IDEvent,String month, String year, SQLiteDatabase database){
-        String [] Projections = {DBStructure.EVENTNAME, DBStructure.TIME, DBStructure.DATE, DBStructure.MONTH, DBStructure.YEAR, DBStructure.ID_EVENT_CREATOR};
+        String [] Projections = {DBStructure.IDEVENT, DBStructure.EVENTNAME, DBStructure.TIME, DBStructure.DATE, DBStructure.MONTH, DBStructure.YEAR, DBStructure.MAIL_EVENT_CREATOR};
         String Selection = DBStructure.IDEVENT + "=? and "+DBStructure.MONTH+"=? and "+DBStructure.YEAR+"=?";
         String[] SelectionArgs = {IDEvent, month, year};
 
         return database.query(DBStructure.EVENT_TABLE_NAME, Projections, Selection, SelectionArgs, null, null, null );
     }
 
-    public Cursor ReadEventsGuestperMonth(String month, String year, String IDEventCreator, SQLiteDatabase database){
-        String [] Projections = {DBStructure.EVENTNAME, DBStructure.TIME, DBStructure.DATE, DBStructure.MONTH, DBStructure.YEAR, DBStructure.ID_EVENT_CREATOR};
-        String Selection = DBStructure.MONTH + "=? and "+DBStructure.YEAR+"=? and "+DBStructure.ID_EVENT_CREATOR+"=?";
-        String[] SelectionArgs = {month, year, IDEventCreator};
+    public Cursor ReadEventsGuestperMonth(String month, String year, String mailEventCreator, SQLiteDatabase database){
+        String [] Projections = {DBStructure.IDEVENT, DBStructure.EVENTNAME, DBStructure.TIME, DBStructure.DATE, DBStructure.MONTH, DBStructure.YEAR, DBStructure.MAIL_EVENT_CREATOR};
+        String Selection = DBStructure.MONTH + "=? and "+DBStructure.YEAR+"=? and "+DBStructure.MAIL_EVENT_CREATOR+"=?";
+        String[] SelectionArgs = {month, year, mailEventCreator};
 
         return database.query(DBStructure.EVENT_TABLE_NAME, Projections, Selection, SelectionArgs, null, null, null );
     }
@@ -112,32 +112,32 @@ public class DBOpenHelper extends SQLiteOpenHelper {
     }
 
 
-    public void SaveGuest(String date, String IDEvent, String IDGuest,SQLiteDatabase database){
+    public void SaveGuest(String date, String IDEvent, String MailGuest,SQLiteDatabase database){
         ContentValues contentValues = new ContentValues();
         contentValues.put(DBStructure.DATE, date);
         contentValues.put(DBStructure.IDEVENT, IDEvent);
-        contentValues.put(DBStructure.IDGUEST, IDGuest);
+        contentValues.put(DBStructure.MAILGUEST, MailGuest);
         database.insert(DBStructure.GUESTS_TABLE_NAME, null, contentValues);
     }
 
-    public Cursor getIDEventfromGuestTab(String date, String IDGuest, SQLiteDatabase database){
+    public Cursor getMailEventfromGuestTab(String date, String MailGuest, SQLiteDatabase database){
         String [] Projections = {DBStructure.IDEVENT};
-        String Selection = DBStructure.DATE + "=? and "+DBStructure.IDGUEST+"=?";;
-        String[] SelectionArgs = {date, IDGuest};
+        String Selection = DBStructure.DATE + "=? and "+DBStructure.MAILGUEST+"=?";;
+        String[] SelectionArgs = {date, MailGuest};
         return database.query(DBStructure.GUESTS_TABLE_NAME, Projections, Selection, SelectionArgs, null, null, null );
     }
     public Cursor getEventByID(String IDEvent,String date, SQLiteDatabase database){
-        String [] Projections = {DBStructure.EVENTNAME, DBStructure.TIME, DBStructure.DATE, DBStructure.MONTH, DBStructure.YEAR, DBStructure.ID_EVENT_CREATOR};
+        String [] Projections = {DBStructure.IDEVENT,DBStructure.EVENTNAME, DBStructure.TIME, DBStructure.DATE, DBStructure.MONTH, DBStructure.YEAR, DBStructure.MAIL_EVENT_CREATOR};
         String Selection = DBStructure.IDEVENT + "=? and "+DBStructure.DATE+"=?";
         String[] SelectionArgs = {IDEvent, date};
         return database.query(DBStructure.EVENT_TABLE_NAME, Projections, Selection, SelectionArgs, null, null, null );
     }
 
 
-    public Cursor getIDEventGuest(String IDGuest, SQLiteDatabase database){
+    public Cursor getIDEventGuest(String MailGuest, SQLiteDatabase database){
         String [] Projections = {DBStructure.IDEVENT};
-        String Selection = DBStructure.IDGUEST+"=?";;
-        String[] SelectionArgs = {IDGuest};
+        String Selection = DBStructure.MAILGUEST+"=?";;
+        String[] SelectionArgs = {MailGuest};
         return database.query(DBStructure.GUESTS_TABLE_NAME, Projections, Selection, SelectionArgs, null, null, null );
     }
 }

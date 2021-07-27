@@ -122,7 +122,20 @@
     <GridView
         android:id="@+id/gridview"
         android:layout_width="match_parent"
-        android:layout_height="565dp"
+        android:layout_height="wrap_content"
         android:numColumns="7"></GridView>
+
+    <Button
+        android:id="@+id/logout"
+        android:layout_width="wrap_content"
+        android:layout_height="61dp"
+        android:layout_gravity="center"
+        android:background="@android:color/darker_gray"
+        android:text="Logout"
+        android:textAllCaps="false"
+        android:textColor="@android:color/black"
+        android:textStyle="bold" />
+
+    />
 
 </LinearLayout>

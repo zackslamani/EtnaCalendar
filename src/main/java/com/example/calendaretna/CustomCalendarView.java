@@ -42,12 +42,13 @@ import java.util.TimeZone;
 
 
 public class CustomCalendarView extends LinearLayout {
-    FirebaseAuth auth;
-    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-    String idEventCreator = user.getUid();
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    FirebaseUser user = mAuth.getCurrentUser();
+    String mailEventCreator = user.getEmail();
     ImageButton NextButton, PreviousButton;
     TextView CurrentDate;
     GridView gridView;
+    Button Logout;
     private static final int MAX_CALENDAR_DAYS = 42;
     Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
     Context context;
@@ -123,7 +124,7 @@ public class CustomCalendarView extends LinearLayout {
             AddEvent.setOnClickListener(view1 -> {
 
                 if (alarmMe.isChecked()){
-                    SaveEvent(EventName.getText().toString(),EventTime.getText().toString(),date, month, year, "on", idEventCreator);
+                    SaveEvent(EventName.getText().toString(),EventTime.getText().toString(),date, month, year, "on", mailEventCreator);
                     SetUpCalendar();
                     Calendar calendar = Calendar.getInstance();
                     calendar.set(alarmYear, alarmMonth, alarmDay, alarmHour, alarmMinuit);
@@ -131,7 +132,7 @@ public class CustomCalendarView extends LinearLayout {
                             , EventName.getText().toString(), EventTime.getText().toString()));
                     alertDialog.dismiss();
                 }else {
-                    SaveEvent(EventName.getText().toString(),EventTime.getText().toString(),date, month, year, "off", idEventCreator);
+                    SaveEvent(EventName.getText().toString(),EventTime.getText().toString(),date, month, year, "off", mailEventCreator);
                     SetUpCalendar();
                     alertDialog.dismiss();
                 }
@@ -146,7 +147,7 @@ public class CustomCalendarView extends LinearLayout {
 
         gridView.setOnItemLongClickListener((parent, view, position, id) -> {
             String date = eventDateFormate.format(dates.get(position));
-            String idEventCreator = user.getUid();
+            String mailEventCreator = user.getEmail();
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setCancelable(true);
             View showView = LayoutInflater.from(parent.getContext()).inflate(R.layout.show_events_layout, null);
@@ -154,7 +155,7 @@ public class CustomCalendarView extends LinearLayout {
             RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(showView.getContext());
             recyclerView.setLayoutManager(layoutManager);
             recyclerView.setHasFixedSize(true);
-            EventRecyclerAdapter eventRecyclerAdapter = new EventRecyclerAdapter(showView.getContext(),CollectAllEventByDate(date, idEventCreator));
+            EventRecyclerAdapter eventRecyclerAdapter = new EventRecyclerAdapter(showView.getContext(),CollectAllEventByDate(date, mailEventCreator));
             recyclerView.setAdapter(eventRecyclerAdapter);
             eventRecyclerAdapter.notifyDataSetChanged();
 
@@ -165,7 +166,17 @@ public class CustomCalendarView extends LinearLayout {
 
             return true;
         });
+        Logout.setOnClickListener(new View.OnClickListener(){
 
+            @Override
+            public void onClick(View view) {
+                Log.i("logout", "button pressed");
+                mAuth.signOut();
+                Log.i("logout", "auth pressed");
+                context.startActivity(new Intent(context,LoginActivity.class));
+                Log.i("logout", "activity pressed");
+            }
+        });
     }
 
     private int getRequestCode(String date, String event, String time){
@@ -192,11 +203,11 @@ public class CustomCalendarView extends LinearLayout {
         alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
     }
 
-    private ArrayList<String> IDEventList(String date, String IDGuest){
+    private ArrayList<String> IDEventList(String date, String MailGuest){
         ArrayList<String> listIDEvent = new ArrayList<>();
         dbOpenHelper = new DBOpenHelper(context);
         SQLiteDatabase database = dbOpenHelper.getReadableDatabase();
-        Cursor cursor = dbOpenHelper.getIDEventfromGuestTab(date, IDGuest, database);
+        Cursor cursor = dbOpenHelper.getMailEventfromGuestTab(date, MailGuest, database);
         while (cursor.moveToNext()){
             String IDEvent = cursor.getString(cursor.getColumnIndex(DBStructure.IDEVENT));
             Log.i("arrayID", "IDevent : "+ IDEvent );
@@ -207,49 +218,43 @@ public class CustomCalendarView extends LinearLayout {
 
 
 
-    private ArrayList<Event> CollectAllEventByDate(String date, String IDeventCreator){
-        ArrayList<Event> listAllEvent = CollectEventByDate(date, IDeventCreator);
-        ArrayList<String> listIDEvent = IDEventList(date, IDeventCreator);
+    private ArrayList<Event> CollectAllEventByDate(String date, String maileventCreator){
+        ArrayList<Event> listAllEvent = CollectEventByDate(date, maileventCreator);
+        ArrayList<String> listIDEvent = IDEventList(date, maileventCreator);
         ArrayList<Event> listGuestEvent = new ArrayList<>();
 
-        //Log.i("a", "taille table Allguest : "+ listAllEvent.size() );
+
         if (listIDEvent.isEmpty()){
-           // Log.i("a", "empty " );
             return listAllEvent;
         }else{
             for (int i = 0; i < listIDEvent.size();i++){
-                //testLog.i("a", "id event : "+ i + listIDEvent.get(i));
                Event event = getEventbyID(listIDEvent.get(i), date);
-            //    Log.i("a", "i listguest : "+ i + "idlist"+event.getEventName());
-               // Log.i("eventnameboucle", "eventname boucle "+ event.getIDEventCreator());
                listGuestEvent.add(event);
             }
-            //Log.i("a", "taille table Allguest : "+ listAllEvent.size() );
+
             for (int i = 0; i<listGuestEvent.size(); i++){
                 Event event = listGuestEvent.get(i);
                 listAllEvent.add(event);
-               // Log.i("a", "i listGuestevent : "+ i );
+
             }
-            //Log.i("a", "taille table Allguest : "+ listAllEvent.size() );
-            //for (int i = 0; i<listAllEvent.size(); i++){
-            //    Log.i("a", "i Total event : "+ i );
-            //}
+
         }
         return listAllEvent;
     }
-    private ArrayList<Event> CollectEventByDate(String date, String IDeventCreator){
+    private ArrayList<Event> CollectEventByDate(String date, String maileventCreator){
         ArrayList<Event> arrayList = new ArrayList<>();
         dbOpenHelper = new DBOpenHelper(context);
         SQLiteDatabase database = dbOpenHelper.getReadableDatabase();
-        Cursor cursor = dbOpenHelper.ReadEvents(date, IDeventCreator,database);
+        Cursor cursor = dbOpenHelper.ReadEvents(date, maileventCreator,database);
         while (cursor.getColumnCount() != 0 && cursor.moveToNext()){
+            String id = cursor.getString(cursor.getColumnIndex(DBStructure.IDEVENT));
             String eventName = cursor.getString(cursor.getColumnIndex(DBStructure.EVENTNAME));
             String time = cursor.getString(cursor.getColumnIndex(DBStructure.TIME));
             String Date = cursor.getString(cursor.getColumnIndex(DBStructure.DATE));
             String month = cursor.getString(cursor.getColumnIndex(DBStructure.MONTH));
             String Year = cursor.getString(cursor.getColumnIndex(DBStructure.YEAR));
-            String IDEventCreator = cursor.getString(cursor.getColumnIndex(DBStructure.ID_EVENT_CREATOR));
-            Event event = new Event(eventName, time, Date, month, Year, IDEventCreator);
+            String mailEventCreator = cursor.getString(cursor.getColumnIndex(DBStructure.MAIL_EVENT_CREATOR));
+            Event event = new Event(id,eventName, time, Date, month, Year, mailEventCreator);
             arrayList.add(event);
         }
         cursor.close();
@@ -264,13 +269,14 @@ public class CustomCalendarView extends LinearLayout {
         SQLiteDatabase database = dbOpenHelper.getReadableDatabase();
         Cursor cursor = dbOpenHelper.getEventByID(IDEvent, date, database);
         while (cursor.getColumnCount() != 0 && cursor.moveToNext()) {
+            String id = cursor.getString(cursor.getColumnIndex(DBStructure.IDEVENT));
             String eventName = cursor.getString(cursor.getColumnIndex(DBStructure.EVENTNAME));
             String time = cursor.getString(cursor.getColumnIndex(DBStructure.TIME));
             String Date = cursor.getString(cursor.getColumnIndex(DBStructure.DATE));
             String month = cursor.getString(cursor.getColumnIndex(DBStructure.MONTH));
             String Year = cursor.getString(cursor.getColumnIndex(DBStructure.YEAR));
-            String IDEventCreator = cursor.getString(cursor.getColumnIndex(DBStructure.ID_EVENT_CREATOR));
-            event = new Event(eventName, time, Date, month, Year, IDEventCreator);
+            String mailEventCreator = cursor.getString(cursor.getColumnIndex(DBStructure.MAIL_EVENT_CREATOR));
+            event = new Event(id,eventName, time, Date, month, Year, mailEventCreator);
         }
         return event;
     }
@@ -279,10 +285,10 @@ public class CustomCalendarView extends LinearLayout {
         super(context, attrs, defStyleAttr);
     }
 
-    private void SaveEvent(String eventName, String time, String date, String month, String year, String notify, String IDEventCreator){
+    private void SaveEvent(String eventName, String time, String date, String month, String year, String notify, String mailEventCreator){
         dbOpenHelper = new DBOpenHelper(context);
         SQLiteDatabase database = dbOpenHelper.getWritableDatabase();
-        dbOpenHelper.SaveEvent(eventName, time, date, month, year, notify, IDEventCreator, database);
+        dbOpenHelper.SaveEvent(eventName, time, date, month, year, notify, mailEventCreator, database);
         dbOpenHelper.close();
         Toast.makeText(context, "Event Saved", Toast.LENGTH_SHORT).show();
 
@@ -294,6 +300,7 @@ public class CustomCalendarView extends LinearLayout {
         NextButton = view.findViewById(R.id.nextBtn);
         PreviousButton = view.findViewById(R.id.previousBtn);
         CurrentDate = view.findViewById(R.id.current_date);
+        Logout = view.findViewById(R.id.logout);
         gridView = view.findViewById(R.id.gridview);
 
     }
@@ -306,7 +313,7 @@ public class CustomCalendarView extends LinearLayout {
         monthCalendar.set(Calendar.DAY_OF_MONTH,1);
         int FirstDayofMonth = monthCalendar.get(Calendar.DAY_OF_WEEK)-1;
         monthCalendar.add(Calendar.DAY_OF_MONTH, -FirstDayofMonth);
-        CollectAllEventsPerMonth(monthFormat.format(calendar.getTime()), yearFormate.format(calendar.getTime()), idEventCreator);
+        CollectAllEventsPerMonth(monthFormat.format(calendar.getTime()), yearFormate.format(calendar.getTime()), mailEventCreator);
 
         while (dates.size() < MAX_CALENDAR_DAYS){
             dates.add(monthCalendar.getTime());
@@ -317,19 +324,20 @@ public class CustomCalendarView extends LinearLayout {
         gridView.setAdapter(myGridAdapter);
     }
 
-    private void CollectEventsPerMonth(String Month, String year, String IDeventCreator){
+    private void CollectEventsPerMonth(String Month, String year, String maileventCreator){
         eventsList.clear();
         dbOpenHelper=new DBOpenHelper(context);
         SQLiteDatabase database = dbOpenHelper.getReadableDatabase();
-        Cursor cursor = dbOpenHelper.ReadEventsperMonth(Month, year, IDeventCreator, database);
+        Cursor cursor = dbOpenHelper.ReadEventsperMonth(Month, year, maileventCreator, database);
         while (cursor.moveToNext()){
+            String id = cursor.getString(cursor.getColumnIndex(DBStructure.IDEVENT));
             String eventName = cursor.getString(cursor.getColumnIndex(DBStructure.EVENTNAME));
             String time = cursor.getString(cursor.getColumnIndex(DBStructure.TIME));
             String date = cursor.getString(cursor.getColumnIndex(DBStructure.DATE));
             String month = cursor.getString(cursor.getColumnIndex(DBStructure.MONTH));
             String Year = cursor.getString(cursor.getColumnIndex(DBStructure.YEAR));
-            String IDEventCreator = cursor.getString(cursor.getColumnIndex(DBStructure.ID_EVENT_CREATOR));
-            Event event = new Event(eventName, time, date, month, Year, IDEventCreator);
+            String mailEventCreator = cursor.getString(cursor.getColumnIndex(DBStructure.MAIL_EVENT_CREATOR));
+            Event event = new Event(id,eventName, time, date, month, Year, mailEventCreator);
             eventsList.add(event);
         }
         cursor.close();
@@ -337,47 +345,43 @@ public class CustomCalendarView extends LinearLayout {
     }
 
     private void CollectEventsGuestPerMonth(String IDevent, String Month, String year){
-        //eventsList.clear();
         dbOpenHelper=new DBOpenHelper(context);
         SQLiteDatabase database = dbOpenHelper.getReadableDatabase();
         Cursor cursor = dbOpenHelper.ReadEventsperMonthID(IDevent, Month, year, database);
         while (cursor.moveToNext()){
+            String id = cursor.getString(cursor.getColumnIndex(DBStructure.IDEVENT));
             String eventName = cursor.getString(cursor.getColumnIndex(DBStructure.EVENTNAME));
             String time = cursor.getString(cursor.getColumnIndex(DBStructure.TIME));
             String date = cursor.getString(cursor.getColumnIndex(DBStructure.DATE));
             String month = cursor.getString(cursor.getColumnIndex(DBStructure.MONTH));
             String Year = cursor.getString(cursor.getColumnIndex(DBStructure.YEAR));
-            String IDEventCreator = cursor.getString(cursor.getColumnIndex(DBStructure.ID_EVENT_CREATOR));
-            Event event = new Event(eventName, time, date, month, Year, IDEventCreator);
+            String mailEventCreator = cursor.getString(cursor.getColumnIndex(DBStructure.MAIL_EVENT_CREATOR));
+            Event event = new Event(id,eventName, time, date, month, Year, mailEventCreator);
             eventsList.add(event);
         }
         cursor.close();
         dbOpenHelper.close();
     }
 
-    private void CollectAllEventsPerMonth(String Month, String year, String IDeventCreator){
+    private void CollectAllEventsPerMonth(String Month, String year, String maileventCreator){
 
-        CollectEventsPerMonth(Month, year, IDeventCreator);
-        Log.i("a", "la taille per month : "+ eventsList.size());
-        ArrayList<String> listIDEvent = IDEventGuestList(IDeventCreator);
-        Log.i("a", "la liste des ID : "+ listIDEvent.size());
+        CollectEventsPerMonth(Month, year, maileventCreator);
+        ArrayList<String> listIDEvent = IDEventGuestList(maileventCreator);
        for (int i = 0; i <listIDEvent.size(); i++){
-           Log.i("a", "get : "+listIDEvent.get(i));
            CollectEventsGuestPerMonth(listIDEvent.get(i), Month, year);
        }
-        Log.i("a", "la taille per month apres ajout : "+ eventsList.size());
     }
 
-    private ArrayList<String> IDEventGuestList(String IDGuest){
+    private ArrayList<String> IDEventGuestList(String MailGuest){
         ArrayList<String> listIDEvent = new ArrayList<>();
         dbOpenHelper = new DBOpenHelper(context);
         SQLiteDatabase database = dbOpenHelper.getReadableDatabase();
-        Cursor cursor = dbOpenHelper.getIDEventGuest(IDGuest, database);
+        Cursor cursor = dbOpenHelper.getIDEventGuest(MailGuest, database);
         while (cursor.moveToNext()){
             String IDEvent = cursor.getString(cursor.getColumnIndex(DBStructure.IDEVENT));
-           // Log.i("arrayID", "IDevent : "+ IDEvent );
             listIDEvent.add(IDEvent);
         }
         return listIDEvent;
     }
+
 }

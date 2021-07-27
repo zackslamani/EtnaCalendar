@@ -17,12 +17,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.AuthResult;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.zip.Inflater;
 
 public class EventRecyclerAdapter extends RecyclerView.Adapter<EventRecyclerAdapter.MyViewHolder> {
 
@@ -61,15 +55,16 @@ public class EventRecyclerAdapter extends RecyclerView.Adapter<EventRecyclerAdap
             AlertDialog alertDialog;
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setCancelable(true);
-            Log.i("eventRecycler", "inflatelance");
             View addGuestView = LayoutInflater.from(context).inflate(R.layout.add_guest_layout, null);
-            EditText mailGuestEditText = addGuestView.findViewById(R.id.mailguest);
-            String mailGuest = mailGuestEditText.getText().toString();
-            //UserRecord userRecord = FirebaseAuth.getInstance().getUser(uid);
+            Button add_guest_btn = addGuestView.findViewById(R.id.add_guest_btn);
+            add_guest_btn.setOnClickListener(view1 -> {
+                EditText mailGuestEditText = addGuestView.findViewById(R.id.mailGuest);
+                String emailGuest = mailGuestEditText.getText().toString();
+               saveguest(event.getDate(), event.getIDEvent(), emailGuest);
+            });
             builder.setView(addGuestView);
             alertDialog = builder.create();
             alertDialog.show();
-            Log.i("eventRecycler", "inflatelance2");
                 });
         holder.delete.setOnClickListener(view -> {
             deleteCalendarEvent(event.getEventName(), event.getDate(), event.getTime());
@@ -159,6 +154,13 @@ public class EventRecyclerAdapter extends RecyclerView.Adapter<EventRecyclerAdap
         return date;
     }
 
+    private void saveguest(String date, String IDEvent, String mailGuest){
+        dbOpenHelper = new DBOpenHelper(context);
+        SQLiteDatabase database = dbOpenHelper.getWritableDatabase();
+        dbOpenHelper.SaveGuest(date, IDEvent, mailGuest, database);
+        dbOpenHelper.close();
+    }
+
     private void deleteCalendarEvent(String event, String date, String time) {
         dbOpenHelper = new DBOpenHelper(context);
         SQLiteDatabase database = dbOpenHelper.getWritableDatabase();
@@ -211,7 +213,6 @@ public class EventRecyclerAdapter extends RecyclerView.Adapter<EventRecyclerAdap
         }
         cursor.close();
         dbOpenHelper.close();
-
         return code;
     }
 

@@ -22,7 +22,7 @@
         android:layout_height="50dp"
         android:background="@android:color/white"
         android:hint="Type Email guest"
-        android:id="@+id/mailguest"
+        android:id="@+id/mailGuest"
         android:inputType="textShortMessage"
         android:layout_margin="20dp"
         android:gravity="center" />
@@ -46,7 +46,7 @@
         android:textStyle="bold"
         android:textColor="@android:color/black"
         android:background="@android:color/darker_gray"
-        android:id="@+id/add_guest"/>
+        android:id="@+id/add_guest_btn"/>
 
 
 
